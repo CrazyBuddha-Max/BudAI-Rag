@@ -55,3 +55,9 @@ backend/
 
 ### 前端
 
+# 本地部署
+### 数据库
+mysql：
+```
+CREATE DATABASE budai_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; 
+```
