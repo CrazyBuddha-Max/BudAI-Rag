@@ -1,0 +1,28 @@
+cat <<EOF > .gitignore
+# macOS 专用忽略
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Python 字节码
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 虚拟环境
+.venv/
+venv/
+ENV/
+env/
+
+# 编译产物
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# 环境配置文件
+.env
+.flaskenv
+EOF

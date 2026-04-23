@@ -1,0 +1,144 @@
+{
+    // 1. 必须包含 folders 属性，用来定义你的子项目
+    "folders": [
+        // 如果你想把子项目显式列出来（推荐，这样变量解析更准）：
+        // 显式列出你的子项目文件夹
+        {
+            "name": "backend",
+            "path": "./backend"
+        },
+        {
+            "name": "root",
+            "path": "."
+        },
+    ],
+    "settings": {
+        // 解决自动激活冲突
+        "python.terminal.activateEnvInCurrentTerminal": true,
+        // --- 1. Python 核心与 Pylance (PyCharm 化智能分析) ---
+        "python.languageServer": "Pylance",
+        // 设为 off 或 basic，配合下方的诊断屏蔽，可以获得“只提示不报错”的体验
+        "python.analysis.typeCheckingMode": "basic",
+        "python.analysis.useLibraryCodeForTypes": true,
+        "python.analysis.autoImportCompletions": true,
+        "python.analysis.indexing": true,
+        "python.analysis.completeFunctionParens": true,
+        // --- 2. 诊断级别优化 (解决红线波浪线的核心) ---
+        "python.analysis.diagnosticSeverityOverrides": {
+            // 1. 核心：处理 DrissionPage 动态参数问题
+            "reportCallIssue": "information", // 将“参数名错误”降级为蓝色提示，不再出红线
+            "reportArgumentType": "information", // 将“类型不匹配”降级，防止第三方库类型定义不准报错
+            "reportAttributeAccessIssue": "information", // 解决某些动态属性找不到的问题
+            // 2. 核心：保留真正的逻辑错误 (必须红线)
+            "reportUnboundVariable": "error", // 变量未定义就使用，必须大红线
+            "reportUndefinedVariable": "error", // 根本没这个变量，必须大红线
+            "reportInvalidStringEscapeSequence": "error", // 错误的转义符
+            // 3. 辅助：中强度提示
+            "reportGeneralTypeIssues": "warning", // 一般性类型问题给黄线
+            "reportOptionalMemberAccess": "warning", // 可能为 None 的变量调用属性给黄线
+            "reportOperatorIssue": "warning", // 错误的运算符操作（如 字符串 + 数字）
+            "reportReturnType": "warning", // 解决：函数声明了返回 list 但实际返回 sequence 报错
+            "reportMissingTypeStubs": "warning", // 解决：某些第三方库没有类型定义文件时的提醒
+            "reportUnknownMemberType": "warning", // 解决：动态属性（如 sqlalchemy 的 scalars()）识别不准
+        },
+        // --- 3. 视觉与内联提示 (Inlay Hints) ---
+        "editor.inlayHints.enabled": "on",
+        "python.analysis.inlayHints.variableTypes": true,
+        "python.analysis.inlayHints.functionReturnTypes": true,
+        "python.analysis.inlayHints.callArgumentNames": "all", // 模拟 PyCharm 参数名预览
+        "editor.parameterHints.enabled": false, // 已由内联提示代替
+        // --- 4. 代码编辑与补全行为 (PyCharm 风格) ---
+        "editor.suggestOnTriggerCharacters": true,
+        "editor.tabCompletion": "on",
+        "editor.acceptSuggestionOnEnter": "on",
+        "editor.acceptSuggestionOnCommitCharacter": true, // 输入 . 自动确认补全
+        "editor.suggestSelection": "first",
+        "editor.quickSuggestionsDelay": 0,
+        // 智能代码补全预览
+        "editor.suggest.preview": true,
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": "on",
+            "strings": true // 字符串内也启用提示，方便填路径
+        },
+        // --- 5. 文件与保存 (IDEA 逻辑) ---
+        "files.autoSave": "onFocusChange", // 核心：切出窗口就自动保存，无需手动 Cmd+S
+        "python-envs.defaultEnvManager": "ms-python.python:venv",
+        "python-envs.defaultPackageManager": "ms-python.python:pip",
+        // --- 6. Ruff 自动化配置 (保持不变) ---
+        "editor.formatOnSave": true,
+        "ruff.nativeServer": "on",
+        // Ruff 优先使用当前工作区文件夹下的解释器
+        "ruff.importStrategy": "fromEnvironment",
+        "ruff.interpreter": [
+            // 修改点：Ruff 启动路径（不同的项目需要修改成对应的路径）
+            "${workspaceFolder}/backend/.venv/bin/python",
+        ],
+        "[python]": {
+            "editor.defaultFormatter": "charliermarsh.ruff",
+            "editor.codeActionsOnSave": {
+                "source.fixAll.ruff": "explicit",
+                "source.organizeImports.ruff": "explicit"
+            }
+        },
+        "ruff.configuration": {
+            "lint": {
+                "select": [
+                    "E",
+                    "F",
+                    "B",
+                    "UP",
+                    "N",
+                    "ANN"
+                ],
+                "ignore": [
+                    "D203",
+                    "D415",
+                    "D401",
+                    "D413",
+                    "D404"
+                ]
+            }
+        },
+        // --- 7. 前端与 Vue 配置 (整合你的原有配置) ---
+        "tailwindCSS.experimental.classRegex": [
+            [
+                "cva\\(([^)]*)\\)",
+                "[\"'`]([^\"'`]*?)[\"'`]"
+            ],
+            [
+                "cx\\(([^)]*)\\)",
+                "[\"'`]([^\"'`]*?)[\"'`]"
+            ],
+            [
+                "cn\\(([^)]*)\\)",
+                "[\"'`]([^\"'`]*?)[\"'`]"
+            ]
+        ],
+        "vue.inlayHints.missingProps": true,
+        // 智能代码补全
+        "editor.inlineSuggest.enabled": true,
+        "tailwindCSS.emmetCompletions": true,
+        "tailwindCSS.includeLanguages": {
+            "plaintext": "html",
+            "javascript": "javascript",
+            "vue": "html"
+        },
+        "vue.completion.preferredTagNameCase": "pascal",
+        "vue.completion.autoImportComponent": true,
+        // --- 8. 界面与字体 ---
+        "editor.fontFamily": "Sarasa Gothic, JetBrains Mono",
+        "workbench.colorTheme": "Monokai Pro",
+        "editor.accessibilityPageSize": 800,
+        "python.REPL.enableREPLSmartSend": false,
+        "notebook.formatOnSave.enabled": true,
+        "python-envs.pythonProjects": [
+            {
+                "path": "./backend",
+                "envManager": "ms-python.python:venv",
+                "packageManager": "ms-python.python:pip"
+            }
+        ],
+        "commentTranslate.hover.enabled": true,
+    },
+}

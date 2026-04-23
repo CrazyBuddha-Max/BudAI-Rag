@@ -1,0 +1,100 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        // --- 1. 通用脚本调试 (增强版) ---
+        {
+            "name": "Python: 当前文件 (自动识别路径)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            // 关键：cwd 设为文件所在目录，解决相对路径读不到文件的问题
+            "cwd": "${fileDirname}",
+            "env": {
+                // 关键：确保 PYTHONPATH 包含项目根目录，解决跨目录 import 报错
+                "PYTHONPATH": "${workspaceFolder}:${fileDirname}"
+            }
+        },
+        {
+            "name": "Python: 进阶调试 (追踪库源码)",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "cwd": "${fileDirname}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}:${fileDirname}"
+            }
+        },
+        // --- 2. FastAPI 调试 (多项目通用版) ---
+        {
+            "name": "Python: FastAPI (当前打开的入口文件)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "cwd": "${fileDirname}", // 自动切换到当前 FastAPI 项目目录
+            "args": [
+                "${fileBasenameNoExtension}:app", // 动态匹配当前打开的文件名，如 main:app
+                "--reload",
+                "--port",
+                "8000"
+            ],
+            "jinja": true,
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${fileDirname}"
+            }
+        },
+        // --- 3. 定制化启动 (适合固定项目，无需打开文件直接点击运行) ---
+        {
+            "name": "启动: BudAI-rag (FastAPI)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            // 显式指定子项目路径
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "main:app",
+                "--reload",
+                "--port",
+                "8000"
+            ],
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/Standardized_development"
+            }
+        },
+        // --- 4. Django & Flask (通用配置) ---
+        {
+            "name": "Python: Django (自动定位 manage.py)",
+            "type": "debugpy",
+            "request": "launch",
+            // 自动在当前打开的文件目录下找 manage.py
+            "program": "${fileDirname}/manage.py",
+            "args": [
+                "runserver"
+            ],
+            "django": true,
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Flask (当前文件启动)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "flask",
+            "cwd": "${fileDirname}",
+            "env": {
+                "FLASK_APP": "${file}",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload"
+            ],
+            "jinja": true,
+            "justMyCode": true
+        }
+    ]
+}

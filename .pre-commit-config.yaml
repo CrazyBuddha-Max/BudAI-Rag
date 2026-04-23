@@ -1,0 +1,34 @@
+repos:
+  # --- 1. 使用本地环境中的 Ruff ---
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        # 直接调用系统/虚拟环境路径下的 ruff 
+        entry: ruff check
+        args: [ --fix ]
+        language: system
+        types: [python]
+        
+      - id: ruff-format
+        name: ruff-format
+        entry: ruff format
+        language: system
+        types: [python]
+
+  # --- 2. 你的本地 uv 依赖同步脚本 ---
+  - repo: local
+    hooks:
+      - id: uv-freeze
+        name: uv-freeze
+        # 使用 python 执行跨平台过滤逻辑 
+        entry: python -c "import subprocess; out = subprocess.check_output(['uv', 'pip', 'freeze', '--exclude-editable']).decode('utf-8'); filtered = [line for line in out.splitlines() if '@ file' not in line]; open('requirements.txt', 'w', encoding='utf-8').write('\n'.join(filtered) + '\n')"
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: git-add-requirements
+        name: git-add-requirements
+        entry: git add requirements.txt
+        language: system
+        pass_filenames: false
