@@ -10,7 +10,7 @@ This is the Rag Q&A system of BudAI's official AI product, which is divided into
 - You can view and select the knowledge base
 - AI chat assistant can add, delete, modify and search. AI chat assistant can set parameters such as top-n, temperature, context length, recall rate, etc
 - Personal account settings allow for modification of account information and account cancellation
-### The functions of the management system for the day after tomorrow include:
+### The functions of the management system include:
 - User's additions, deletions, modifications, and queries
 - View user's conversation records
 - Addition, deletion, modification, and search of knowledge base
