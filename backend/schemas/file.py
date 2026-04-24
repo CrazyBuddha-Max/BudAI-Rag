@@ -13,3 +13,9 @@ class FileResponse(BaseModel):
     parse_error: Optional[str]
 
     model_config = {"from_attributes": True}
+
+
+class ParseRequest(BaseModel):
+    file_ids: list[str]  # 支持多个文件id
+    knowledge_base_id: str  # 解析时才关联知识库
+    embedding_model_id: str  # 用哪个模型做Embedding

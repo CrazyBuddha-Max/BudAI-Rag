@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -18,3 +20,4 @@ class MessageResponse(BaseModel):
 class ChatRequest(BaseModel):
     conversation_id: str
     content: str  # 用户这次发的消息
+    knowledge_base_id: Optional[str] = None

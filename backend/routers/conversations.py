@@ -78,6 +78,7 @@ async def chat(
                 conversation_id=request.conversation_id,
                 user_message=request.content,
                 user_id=current_user.id,
+                knowledge_base_id=request.knowledge_base_id,
             ):
                 yield f"data: {chunk}\n\n"
             yield "data: [DONE]\n\n"
@@ -93,4 +94,5 @@ async def chat(
             conversation_id=request.conversation_id,
             user_message=request.content,
             user_id=current_user.id,
+            knowledge_base_id=request.knowledge_base_id,
         )

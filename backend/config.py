@@ -2,12 +2,16 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
+    # mysql
     db_host: str
     db_port: int = 3306
     db_user: str
     db_password: str
     db_name: str
-
+    # elasticsearch
+    es_host: str = "http://localhost:9200"
+    es_index: str = "budai_rag_chunks"
+    # jwt
     jwt_secret_key: str
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 10080

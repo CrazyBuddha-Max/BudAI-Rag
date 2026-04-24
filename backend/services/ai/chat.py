@@ -11,6 +11,7 @@ from repositories.assistant import AssistantRepository
 from repositories.conversation import ConversationRepository
 from repositories.llm_model import LLMModelRepository
 from repositories.message import MessageRepository
+from services.ai.rag import RAGService
 
 
 class ChatService:
@@ -24,7 +25,6 @@ class ChatService:
     def _build_context(
         self, messages: list[Message], context_length: int
     ) -> list[dict]:
-        context = []
         total_tokens = 0
         paired_messages = []
         i = len(messages) - 1
@@ -44,12 +44,15 @@ class ChatService:
                     break
             else:
                 i -= 1
-        for msg in paired_messages:
-            context.append({"role": msg.role, "content": msg.content})
-        return context
+        return [{"role": msg.role, "content": msg.content} for msg in paired_messages]
 
-    async def _prepare(self, conversation_id: str, user_message: str, user_id: str):
-        """公共准备逻辑：验证、保存用户消息、构建上下文"""
+    async def _prepare(
+        self,
+        conversation_id: str,
+        user_message: str,
+        user_id: str,
+        knowledge_base_id: str = None,
+    ):
         conversation = await self.conv_repo.find_by_id(conversation_id)
         if not conversation or conversation.user_id != user_id:
             raise HTTPException(status_code=404, detail="对话窗口不存在")
@@ -61,7 +64,15 @@ class ChatService:
         llm_model = await self.model_repo.find_by_id(assistant.llm_model_id)
         if not llm_model or not llm_model.is_active:
             raise HTTPException(status_code=400, detail="大模型不可用")
-
+        # embedding 模型： 优先用助手单独配置的，没有就用对话模型的配置
+        if assistant.embedding_model_id:
+            embedding_model = await self.model_repo.find_by_id(
+                assistant.embedding_model_id
+            )
+            if not embedding_model or not embedding_model.is_active:
+                raise HTTPException(status_code=400, detail="嵌入模型不可用")
+        else:
+            embedding_model = llm_model  # 降级用对话模型配置
         token_count = len(user_message.encode("utf-8")) // 4
         await self.msg_repo.create(
             conversation_id=conversation_id,
@@ -73,8 +84,30 @@ class ChatService:
         all_messages = await self.msg_repo.find_by_conversation(conversation_id)
         context = self._build_context(all_messages[:-1], assistant.context_length)
 
+        rag_context = ""
+        if knowledge_base_id:
+            rag_service = RAGService()
+            try:
+                chunks = await rag_service.search(
+                    query=user_message,
+                    knowledge_base_id=knowledge_base_id,
+                    llm_model=embedding_model,
+                    top_n=assistant.top_n,
+                )
+                if chunks:
+                    rag_context = (
+                        "\n\n以下是相关的参考资料，请基于这些资料回答用户的问题：\n"
+                    )
+                    rag_context += "\n---\n".join(chunks)
+            finally:
+                await rag_service.close()
+
+        full_system_prompt = assistant.system_prompt
+        if rag_context:
+            full_system_prompt += rag_context
+
         messages_payload = [
-            {"role": "system", "content": assistant.system_prompt},
+            {"role": "system", "content": full_system_prompt},
             *context,
             {"role": "user", "content": user_message},
         ]
@@ -82,11 +115,14 @@ class ChatService:
         return assistant, llm_model, messages_payload
 
     async def stream_chat(
-        self, conversation_id: str, user_message: str, user_id: str
+        self,
+        conversation_id: str,
+        user_message: str,
+        user_id: str,
+        knowledge_base_id: str = None,
     ) -> AsyncGenerator[str, None]:
-        """流式对话，逐 token 返回"""
         assistant, llm_model, messages_payload = await self._prepare(
-            conversation_id, user_message, user_id
+            conversation_id, user_message, user_id, knowledge_base_id
         )
 
         full_response = ""
@@ -105,11 +141,14 @@ class ChatService:
         )
 
     async def normal_chat(
-        self, conversation_id: str, user_message: str, user_id: str
+        self,
+        conversation_id: str,
+        user_message: str,
+        user_id: str,
+        knowledge_base_id: str = None,
     ) -> dict:
-        """非流式对话，等待完整响应后一次性返回"""
         assistant, llm_model, messages_payload = await self._prepare(
-            conversation_id, user_message, user_id
+            conversation_id, user_message, user_id, knowledge_base_id
         )
 
         full_response = ""
@@ -125,13 +164,11 @@ class ChatService:
             content=full_response,
             token_count=ai_token_count,
         )
-
         return {"role": "assistant", "content": full_response}
 
     async def _call_llm(
         self, llm_model, messages: list[dict], assistant: Assistant, stream: bool
     ) -> AsyncGenerator[str, None]:
-        """统一入口，根据 provider 分发"""
         if llm_model.provider == "anthropic":
             async for chunk in self._call_anthropic(
                 llm_model, messages, assistant, stream
@@ -148,6 +185,8 @@ class ChatService:
     ) -> AsyncGenerator[str, None]:
         base_url = llm_model.api_base_url or "https://api.openai.com"
         url = f"{base_url}/v1/chat/completions"
+        print(f"调用大模型 url：{url}")
+        print(f"模型名称：{llm_model.model_name}")
         headers = {
             "Authorization": f"Bearer {llm_model.api_key}",
             "Content-Type": "application/json",
@@ -162,11 +201,15 @@ class ChatService:
 
         async with httpx.AsyncClient(timeout=60) as client:
             if stream:
-                # 流式：逐行读取
                 async with client.stream(
                     "POST", url, headers=headers, json=payload
                 ) as response:
                     if response.status_code != 200:
+                        # 加这两行
+                        error_body = await response.aread()
+                        print(
+                            f"大模型报错：{response.status_code} - {error_body.decode()}"
+                        )
                         raise HTTPException(status_code=502, detail="大模型调用失败")
                     async for line in response.aiter_lines():
                         if line.startswith("data: "):
@@ -181,13 +224,14 @@ class ChatService:
                             except Exception:
                                 continue
             else:
-                # 非流式：等待完整响应
                 response = await client.post(url, headers=headers, json=payload)
                 if response.status_code != 200:
+                    # 加这两行
+                    print(f"大模型报错：{response.status_code} - {response.text}")
                     raise HTTPException(status_code=502, detail="大模型调用失败")
                 data = response.json()
                 content = data["choices"][0]["message"]["content"]
-                yield content  # 一次性 yield 完整内容
+                yield content
 
     async def _call_anthropic(
         self, llm_model, messages, assistant, stream: bool

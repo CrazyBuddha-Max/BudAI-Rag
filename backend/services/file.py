@@ -63,7 +63,7 @@ class FileService:
         return await self.repo.create(
             {
                 "user_id": user_id,
-                "knowledge_base_id": knowledge_base_id,
+                "knowledge_base_id": None,
                 "filename": file.filename,
                 "stored_filename": stored_filename,
                 "file_path": file_path,
