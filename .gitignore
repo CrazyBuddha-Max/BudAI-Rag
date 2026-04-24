@@ -31,3 +31,6 @@ EOF
 *.pdf
 *.doc
 *.docx
+
+# 个人配置文件
+*.code-workspace

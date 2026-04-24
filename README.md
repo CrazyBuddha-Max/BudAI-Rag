@@ -1,70 +1,65 @@
-# 简介
-这是BudAI官方的AI产品的rag问答系统，整个系统分为ai对话系统和后台管理系统。（BudAI是谁？正是在下 :smile: ）
+# Introduction
+This is the Rag Q&A system of BudAI's official AI product, which is divided into an AI dialogue system and a backend management system. Who is BudAI? Exactly below: smile:)
+#Functional design
+### The functions of the AI dialogue system include:
+- Register
+- Login
+- Authentication (permissions are divided into regular users and VIP users)
+- AI dialogue (each dialogue window has a window creation time)
+- There is a chat history record, and each window can set the context length (in tokens). Users can choose the length range of the context based on the large model, as this method may cause the context truncation to be too rigid. Therefore, to determine whether the conversation is complete, only the complete questions and replies will be placed in the context, even if the token has not reached the upper limit
+- You can view and select the knowledge base
+- AI chat assistant can add, delete, modify and search. AI chat assistant can set parameters such as top-n, temperature, context length, recall rate, etc
+- Personal account settings allow for modification of account information and account cancellation
+### The functions of the management system for the day after tomorrow include:
+- User's additions, deletions, modifications, and queries
+- View user's conversation records
+- Addition, deletion, modification, and search of knowledge base
+- File upload can be added, deleted, modified, and queried, and files can also be downloaded
+- The addition, deletion, modification, and search of large models can also be done using third-party APIs
+- File parsing, using embedding model parsing, slicing truncation using intelligent slicing of large models, and the ability to select a specified large model on the page
+# Page design:
+### Backend management system page:
+home page
+- Knowledge Base Management
+- File management
+- Model management
+- User Management
+- User Information
+- User conversation history
+### AI dialogue system page:
+home page
+- Q&A
+- AI chat assistant
+- Chat Window
+- Historical records
+- Personal settings
+# Technology Stack
+- Front end: React+Magicui
+- Backend: Python+FastAPI+Langchain+Langgraph
+- Database: MySQL, Elasticsearch
+# Project Architecture
+### Backend
+Routers → only responsible for receiving requests, calling services, and returning responses
 
-# 功能设计
-### ai对话系统的功能有：
-- 注册
-- 登录
-- 鉴权（权限分为普通用户，vip用户）
-- ai对话（每个对话窗口有创建窗口的时间）
-- 有聊天历史记录，每个窗口能设置上下文长度（单位是token，可以根据大模型给出上下文的长度范围，给用户自己选择，因为这种方式可能会导致上下文截断过于生硬，所以要判定是否是完整的对话，只会将完整的问题和回复放入上下文中，就算token还没到上限也可以）
-- 可以对知识库进行查看和选择
-- 可以AI聊天助手增删改查，AI聊天助手可以设置top_n,温度，上下文长度，召回率等等参数
-- 个人账号设置，可以对账号信息进行修改，也可以注销账号
+Services → Responsible only for business logic
 
-### 后天管理系统的功能有：
-- 用户的增删改查
-- 查看用户的对话记录
-- 知识库的增删改查
-- 文件上传的增删改查，文件也支持下载
-- 大模型的增删改查，也可以使用第三方的api
-- 文件解析，使用embedding模型解析，切片截断使用大模型智能切片，在页面中能选择指定大模型
+Repositories → Only responsible for SQL
 
-# 页面设计：
-### 后台管理系统页面：
-- 首页
-- 知识库管理
-- 文件管理
-- 模型管理
-- 用户管理
-  - 用户信息
-    - 用户对话历史记录
+Models → just the mapping of database tables
 
-### ai对话系统页面：
-- 首页
-- 问答
-    - AI聊天助手
-      - 聊天窗口
-    - 历史记录
-- 个人设置
+Schemas → just data format definition
 
-# 技术栈
-- 前端：react+magicui
-- 后端：python+fastapi+langchain+langgraph
-- 数据库：mysql、elasticsearch
-
-# 项目架构
-### 后端
-routers    → 只负责接收请求、调用 service、返回响应
-services   → 只负责业务逻辑
-repositories → 只负责 SQL
-models     → 只是数据库表的映射
-schemas    → 只是数据格式定义
-
-### 前端
-
-# 本地部署
-### 数据库
+### Front end
+# Local deployment
+database
 `mysql`：
 ```
-CREATE DATABASE budai_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; 
+CREATE DATABASE budai_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  
 ```
-
-`elasticsearch`:(docker一键部署)
+`Elasticsearch`: (Docker One Click Deployment)
 ```
 cd backend
 ```
-
 ```
 docker-compose up -d
 ```
