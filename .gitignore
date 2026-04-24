@@ -1,36 +1,105 @@
-cat <<EOF > .gitignore
-# macOS 专用忽略
+# ==========================================
+# 1. 系统与编辑器 (System & Editors)
+# ==========================================
 .DS_Store
 .AppleDouble
 .LSOverride
 ._*
+Thumbs.db
+Desktop.ini
 
-# Python 字节码
-__pycache__/
-*.py[cod]
-*$py.class
+*.code-workspace
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# 虚拟环境
-.venv/
-venv/
-ENV/
-env/
+# ==========================================
+# 2. Python 后端 (Python Backend)
+# ==========================================
+**/__pycache__/
+**/*.py[cod]
+**/*.pyc
+**/*.so
+**/.Python
+**/.venv/
+**/venv/
+**/env/
+**/ENV/
+
+# 依赖与打包
+**/build/
+**/dist/
+**/*.egg-info/
+**/.eggs/
+**/.installed.cfg
+**/.installed.cfg
+
+# 测试与质量检查
+**/.pytest_cache/
+**/.ruff_cache/
+**/.mypy_cache/
+**/.tox/
+**/.coverage
+**/htmlcov/
+
+# uv 包管理器特有
+**/.uv/
+
+# ==========================================
+# 3. Node.js 前端 (Frontend)
+# ==========================================
+**/node_modules/
+**/logs/
+**/*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.pnpm-debug.log*
 
 # 编译产物
-dist/
-build/
-*.egg-info/
-.eggs/
+**/dist/
+**/dist-ssr/
+**/out/
+**/.next/
+**/.nuxt/
 
-# 环境配置文件
-.env
-.flaskenv
-EOF
+# 浏览器测试缓存 (Playwright/Cypress)
+**/test-results/
+**/playwright-report/
+**/blob-report/
+**/.auth/
 
-# 文件
+# ==========================================
+# 4. 数据库与持久化 (Databases)
+# ==========================================
+**/*.sqlite
+**/*.sqlite-journal
+**/dump.rdb
+
+
+# ==========================================
+# 5. 环境与敏感信息 (Security & Env)
+# ==========================================
+**/.env
+**/.env.*
+**/.flaskenv
+**/.python-version
+**/auth.json
+**/secrets.yaml
+! .env.example
+
+# ==========================================
+# 6. 杂项 (Miscellaneous)
+# ==========================================
 *.pdf
 *.doc
 *.docx
-
-# 个人配置文件
-*.code-workspace
+*.log
+**/tmp/
+**/temp/

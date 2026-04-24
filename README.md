@@ -50,8 +50,9 @@ Models → just the mapping of database tables
 Schemas → just data format definition
 
 ### Front end
+
 # Local deployment
-database
+**database**:
 `mysql`：
 ```
 CREATE DATABASE budai_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;  
@@ -63,3 +64,25 @@ cd backend
 ```
 docker-compose up -d
 ```
+**backend**:
+```
+source .venv/bin/activate
+```
+
+```
+python main.py
+```
+**frontend**:
+```
+cd chat-frontend
+```
+```
+npm install tailwindcss @tailwindcss/vite react-router-dom axios
+```
+```
+npm install
+```
+```
+npm run dev
+```
+- Like chat-frontend, admin-frontend is also configured in this way.
